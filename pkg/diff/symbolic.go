@@ -12,17 +12,15 @@ type DiffFunc struct {
 	_df func(x float64) float64
 }
 
-func (d DiffFunc) f(x float64) float64 {
-	return d._f(x)
-}
-
-func (d DiffFunc) df(x float64) float64 {
-	return d._df(x)
-}
+func (d DiffFunc) f(x float64) float64  { return d._f(x) }
+func (d DiffFunc) df(x float64) float64 { return d._df(x) }
 
 type Constant struct {
 	c float64
 }
+
+func (c Constant) f(x float64) float64  { return c.c }
+func (c Constant) df(x float64) float64 { return 0.0 }
 
 var Sin = DiffFunc{
 	_f:  func(x float64) float64 { return math.Sin(x) },
@@ -39,14 +37,6 @@ var Exp = DiffFunc{
 var Log = DiffFunc{
 	_f:  func(x float64) float64 { return math.Log(x) },
 	_df: func(x float64) float64 { return 1.0 / x },
-}
-
-func (c Constant) f(x float64) float64 {
-	return c.c
-}
-
-func (c Constant) df(x float64) float64 {
-	return 0.0
 }
 
 // Polynomial of form c_0 + c_1*x + c_2*x^2 + ... + c_{n-1}*x^{n-1}.
@@ -71,8 +61,6 @@ func (p Polynomial) f(x float64) float64 {
 }
 
 func (p Polynomial) df(x float64) float64 {
-	// of the form c_1 + 2*c_2*x + ... + (n-1)*c_{n-1}*x^{n-2}
-
 	dfx := p.coefficients[1]
 	if len(p.coefficients) <= 2 {
 		return dfx
