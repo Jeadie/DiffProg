@@ -38,7 +38,7 @@ var numericTests = []NumericTest{
 	{
 		dfn: Add(
 			Polynomial{coefficients: []float64{0.0, 0.0, 1.0}},
-			Constant{c: 4.0}).f,
+			Constant{c: 4.0}).F,
 		dfnStr: "y=x^2+4 (Add)",
 		x:      []float64{-2.0, -1.0, 0.0, 1.0, 2.0},
 		f:      []float64{8.0, 5.0, 4.0, 5.0, 8.0},
@@ -47,7 +47,7 @@ var numericTests = []NumericTest{
 	{
 		dfn: Add(
 			Mul(Polynomial{coefficients: []float64{0.0, 1.0}}, Polynomial{coefficients: []float64{0.0, 1.0}}),
-			Constant{c: 4.0}).f,
+			Constant{c: 4.0}).F,
 		dfnStr: "y=x^2+4 (Mul + Add)",
 		x:      []float64{-2.0, -1.0, 0.0, 1.0, 2.0},
 		f:      []float64{8.0, 5.0, 4.0, 5.0, 8.0},

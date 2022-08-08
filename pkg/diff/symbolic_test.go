@@ -58,7 +58,7 @@ func TestSymbolic(t *testing.T) {
 			symbl := test.symbol
 
 			for i, x := range test.x {
-				symblF := symbl.f(x)
+				symblF := symbl.F(x)
 				if test.f[i] != symblF {
 					t.Errorf("function expected %f != %f actual", test.f[i], symblF)
 				}

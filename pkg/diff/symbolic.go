@@ -3,51 +3,55 @@ package diff
 import "math"
 
 type SymbolFunc interface {
-	f(x float64) float64
-	df(x float64) float64
+	F(x float64) float64
+	Df(x float64) float64
 }
 
 type DiffFunc struct {
-	_f  func(x float64) float64
-	_df func(x float64) float64
+	f  func(x float64) float64
+	df func(x float64) float64
 }
 
-func (d DiffFunc) f(x float64) float64  { return d._f(x) }
-func (d DiffFunc) df(x float64) float64 { return d._df(x) }
+func (d DiffFunc) F(x float64) float64  { return d.f(x) }
+func (d DiffFunc) Df(x float64) float64 { return d.Df(x) }
 
 type Constant struct {
 	c float64
 }
 
-func (c Constant) f(x float64) float64  { return c.c }
-func (c Constant) df(x float64) float64 { return 0.0 }
+func (c Constant) F(x float64) float64  { return c.c }
+func (c Constant) Df(x float64) float64 { return 0.0 }
 
 var Sin = DiffFunc{
-	_f:  func(x float64) float64 { return math.Sin(x) },
-	_df: func(x float64) float64 { return math.Cos(x) },
+	f:  func(x float64) float64 { return math.Sin(x) },
+	df: func(x float64) float64 { return math.Cos(x) },
 }
 var Cos = DiffFunc{
-	_f:  func(x float64) float64 { return math.Cos(x) },
-	_df: func(x float64) float64 { return -1.0 * math.Sin(x) },
+	f:  func(x float64) float64 { return math.Cos(x) },
+	df: func(x float64) float64 { return -1.0 * math.Sin(x) },
 }
 var Exp = DiffFunc{
-	_f:  func(x float64) float64 { return math.Exp(x) },
-	_df: func(x float64) float64 { return math.Exp(x) },
+	f:  func(x float64) float64 { return math.Exp(x) },
+	df: func(x float64) float64 { return math.Exp(x) },
 }
 var Log = DiffFunc{
-	_f:  func(x float64) float64 { return math.Log(x) },
-	_df: func(x float64) float64 { return 1.0 / x },
+	f:  func(x float64) float64 { return math.Log(x) },
+	df: func(x float64) float64 { return 1.0 / x },
+}
+
+func Polynomial(coefficients ...float64) SymbolFunc {
+	return polynomial{coefficients: coefficients}
 }
 
 // Polynomial of form c_0 + c_1*x + c_2*x^2 + ... + c_{n-1}*x^{n-1}.
 // Should be used for linear or higher order polynomials.
 // For constants, use Constant
-type Polynomial struct {
+type polynomial struct {
 	// coefficients ordered: c_0, c_1, c_2,..., c_{n-1}
 	coefficients []float64
 }
 
-func (p Polynomial) f(x float64) float64 {
+func (p polynomial) F(x float64) float64 {
 	fx := p.coefficients[0]
 
 	x_pow := x
@@ -60,7 +64,7 @@ func (p Polynomial) f(x float64) float64 {
 	return fx
 }
 
-func (p Polynomial) df(x float64) float64 {
+func (p polynomial) Df(x float64) float64 {
 	dfx := p.coefficients[1]
 	if len(p.coefficients) <= 2 {
 		return dfx
@@ -81,31 +85,35 @@ func (p Polynomial) df(x float64) float64 {
 // Add two SymbolFunc to create a new SymbolFunc
 func Add(a SymbolFunc, b SymbolFunc) SymbolFunc {
 	return DiffFunc{
-		_f:  func(x float64) float64 { return a.f(x) + b.f(x) },
-		_df: func(x float64) float64 { return a.df(x) + b.df(x) },
+		f:  func(x float64) float64 { return a.F(x) + b.F(x) },
+		df: func(x float64) float64 { return a.Df(x) + b.Df(x) },
 	}
 }
 
 // Mul two SymbolFunc to create a new SymbolFunc
 func Mul(a SymbolFunc, b SymbolFunc) SymbolFunc {
 	return DiffFunc{
-		_f:  func(x float64) float64 { return a.f(x) * b.f(x) },
-		_df: func(x float64) float64 { return (b.f(x) * a.df(x)) + (a.f(x) * b.df(x)) },
+		f:  func(x float64) float64 { return a.F(x) * b.F(x) },
+		df: func(x float64) float64 { return (b.F(x) * a.Df(x)) + (a.F(x) * b.Df(x)) },
 	}
 }
 
 // Div two SymbolFunc to create a new SymbolFunc
 func Div(a SymbolFunc, b SymbolFunc) SymbolFunc {
 	return DiffFunc{
-		_f:  func(x float64) float64 { return a.f(x) / b.f(x) },
-		_df: func(x float64) float64 { return ((b.f(x) * a.df(x)) - (a.f(x) * b.df(x))) / (math.Pow(b.f(x), 2.0)) },
+		f:  func(x float64) float64 { return a.F(x) / b.F(x) },
+		df: func(x float64) float64 { return ((b.F(x) * a.Df(x)) - (a.F(x) * b.Df(x))) / (math.Pow(b.F(x), 2.0)) },
 	}
 }
 
 // Compose two symbolic functions to create a new SymbolFunc
-func Compose(inner SymbolFunc, outer SymbolFunc) SymbolFunc {
+func Compose(outer SymbolFunc, inner SymbolFunc) SymbolFunc {
 	return DiffFunc{
-		_f:  func(x float64) float64 { return outer.f(inner.f(x)) },
-		_df: func(x float64) float64 { return inner.df(x) * outer.df(inner.f(x)) },
+		f:  func(x float64) float64 { return outer.F(inner.F(x)) },
+		df: func(x float64) float64 { return inner.Df(x) * outer.Df(inner.F(x)) },
 	}
+}
+
+func Apply(fn func(x float64) float64, x []float64) []float64 {
+	return []float64{}
 }
