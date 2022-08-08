@@ -13,7 +13,7 @@ type DiffFunc struct {
 }
 
 func (d DiffFunc) F(x float64) float64  { return d.f(x) }
-func (d DiffFunc) Df(x float64) float64 { return d.Df(x) }
+func (d DiffFunc) Df(x float64) float64 { return d.df(x) }
 
 type Constant struct {
 	c float64
@@ -115,5 +115,9 @@ func Compose(outer SymbolFunc, inner SymbolFunc) SymbolFunc {
 }
 
 func Apply(fn func(x float64) float64, x []float64) []float64 {
-	return []float64{}
+	result := make([]float64, len(x))
+	for i, xi := range x {
+		result[i] = fn(xi)
+	}
+	return result
 }
