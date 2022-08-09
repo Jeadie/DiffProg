@@ -7,7 +7,7 @@ Simple polynomials
 ```go
 import (
     "fmt"
-    f "github.com/Jeadie/DiffProg/pkg/diff"
+    f "github.com/Jeadie/DiffProg/pkg/scalar"
 )
 
 // f(x) = 1+3x-2x^2

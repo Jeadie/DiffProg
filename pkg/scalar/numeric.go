@@ -1,4 +1,4 @@
-package diff
+package scalar
 
 type DFn func(x float64) float64
 

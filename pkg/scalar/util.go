@@ -1,4 +1,4 @@
-package diff
+package scalar
 
 func Linspace(start float64, stop float64, num uint) []float64 {
 	if stop < start {
